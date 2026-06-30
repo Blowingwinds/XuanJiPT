@@ -1,11 +1,11 @@
-# 玄机图 XuanJiPT Development Progress
+# 玄机 XuanJiPT Development Progress
 
 Date: 2026-06-30
 Workspace: `C:\ptprojects`
 
 ## Project Goal
 
-Build 玄机图 XuanJiPT, a paper-oriented PTT-DAG penetration testing task planning prototype based on constrained LLM selection and knowledge-backed validation.
+Build 玄机 XuanJiPT, a paper-oriented PTT-DAG penetration testing task planning prototype based on constrained LLM selection and knowledge-backed validation.
 
 Core flow:
 

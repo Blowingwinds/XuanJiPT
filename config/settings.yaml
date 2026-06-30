@@ -2,7 +2,7 @@ app:
   name: XuanJiPT
   version: "0.1"
   environment: development
-  description: Runtime settings for 玄机图 XuanJiPT, a phase-one PTT-DAG planning prototype.
+  description: Runtime settings for 玄机 XuanJiPT, a phase-one PTT-DAG planning prototype.
 
 paths:
   safety_policy: config/safety_policy.yaml

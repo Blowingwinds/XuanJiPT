@@ -1,6 +1,6 @@
-# 玄机图 XuanJiPT
+# 玄机 XuanJiPT
 
-`玄机图 XuanJiPT` is a paper-oriented PTT-DAG penetration testing task planning prototype.
+`玄机 XuanJiPT` is a paper-oriented PTT-DAG penetration testing task planning prototype.
 
 The project explores a constrained planning pipeline:
 
