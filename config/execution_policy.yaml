@@ -1,0 +1,43 @@
+policy_id: default_mvp_execution_policy
+version: "0.1"
+description: Runtime scheduling and adapter selection rules for Action execution.
+
+scheduler:
+  max_parallel_actions: 1
+  ready_status: ready
+  terminal_statuses:
+    - success
+    - failed
+    - skipped
+    - waiting_approval
+  dependency_success_status: success
+  allow_partial_report: true
+
+timeouts:
+  default_action_timeout_seconds: 30
+  mock_action_timeout_seconds: 5
+  adapter_selection_timeout_seconds: 5
+
+retries:
+  max_attempts: 1
+  retry_on_statuses:
+    - failed
+  retry_backoff_seconds: 0
+
+adapter_selection:
+  strategy: weighted_score
+  require_declared_operator_support: true
+  require_input_coverage: true
+  prefer_mock_when_real_adapters_disabled: true
+  weights:
+    capability_match: 0.4
+    output_coverage: 0.3
+    safety_score: 0.2
+    cost_score: 0.1
+
+result_handling:
+  require_json_result: true
+  store_raw_result: false
+  store_parser_errors: true
+  update_blackboard_on_failure: true
+

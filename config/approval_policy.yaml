@@ -1,0 +1,34 @@
+policy_id: default_mvp_approval_policy
+version: "0.1"
+description: Human approval rules for high-risk or blocked Actions.
+
+approval:
+  enabled: true
+  default_decision: hold
+  required_for_risk_levels:
+    - high
+    - critical
+  required_for_categories:
+    - credential_risk
+  status_when_required: waiting_approval
+
+decisions:
+  allowed_values:
+    - approved
+    - rejected
+    - hold
+  approved_next_status: ready
+  rejected_next_status: skipped
+  hold_next_status: waiting_approval
+
+records:
+  require_reviewer: true
+  require_reason: true
+  store_approval_events: true
+  redact_sensitive_inputs: true
+
+execution_after_approval:
+  allow_high_risk_auto_resume: false
+  require_scope_revalidation: true
+  require_policy_revalidation: true
+

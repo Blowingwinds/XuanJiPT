@@ -1,0 +1,46 @@
+policy_id: default_mvp_report_policy
+version: "0.1"
+description: Report generation rules for phase-one demonstration output.
+
+output:
+  enabled: true
+  default_format: markdown
+  supported_formats:
+    - markdown
+    - json
+  output_dir: outputs
+  default_filename: report.md
+  include_generation_timestamp: true
+
+sections:
+  include_goal_summary: true
+  include_scope_summary: true
+  include_selected_route: true
+  include_ptt_dag_summary: true
+  include_action_table: true
+  include_tool_selection_summary: true
+  include_findings_summary: true
+  include_approval_summary: true
+  include_validation_summary: true
+  include_raw_tool_output: false
+
+finding_presentation:
+  group_by_asset: true
+  group_by_severity: true
+  include_evidence: true
+  include_low_confidence_findings: true
+
+safety_presentation:
+  include_skipped_high_risk_actions: true
+  include_waiting_approval_actions: true
+  include_scope_denials: true
+  include_policy_denials: true
+
+redaction:
+  enabled: true
+  redact_sensitive_inputs: true
+  redact_raw_headers:
+    - authorization
+    - cookie
+    - set-cookie
+

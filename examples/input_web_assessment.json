@@ -1,0 +1,19 @@
+{
+  "goal": "对授权 Web 服务进行基础风险评估，输出技术栈、TLS 信息和版本风险线索。",
+  "intent": "web_security_assessment",
+  "scope": ["192.168.56.10"],
+  "constraints": {
+    "allow_high_risk": false,
+    "max_risk_level": "medium"
+  },
+  "known_assets": [
+    {
+      "asset_id": "asset-001",
+      "host": "192.168.56.10",
+      "known_ports": [80, 443],
+      "known_services": [],
+      "known_findings": []
+    }
+  ]
+}
+

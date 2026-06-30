@@ -1,0 +1,312 @@
+metadata:
+  library_id: default_route_template_library
+  version: "0.1"
+  description: Fixed route templates for constrained PTT-DAG planning.
+  owner: ptt_orchestrator
+  route_selection_rule: Planner may select only enabled routes unless an explicit approval flow allows a disabled route.
+  technique_selection_rule: LLM or rule-based selector may select only candidate_techniques declared by the selected route.
+  dependency_rule: execution_dependencies reference Technique identifiers and are expanded to Action dependencies by planner.py.
+
+routes:
+  - route_id: route_basic_exposure_assessment
+    name: basic_exposure_assessment
+    display_name: 基础暴露面评估路线
+    description: 对授权目标进行主机、端口、服务和初步漏洞线索识别。
+    enabled: true
+    risk_level: low
+    route_type: assessment
+    knowledge_refs:
+      - source: local_sop
+        id: sop_basic_exposure_assessment
+      - source: mitre_attack
+        id: TA0043
+        note: Reconnaissance reference for explainability only.
+    recommended_for:
+      - basic_security_assessment
+      - exposure_assessment
+      - mvp_demo
+    selection_hints:
+      target_kinds:
+        - host
+        - small_asset_set
+      useful_when:
+        - 用户目标要求基础安全评估
+        - 目标资产信息较少，需要先发现端口和服务
+      avoid_when:
+        - 用户明确只要求 Web 服务评估
+        - 用户请求凭据风险检查
+    expected_outputs:
+      - asset_summary
+      - service_summary
+      - risk_findings
+      - report_markdown
+    default_selected_techniques:
+      - host_discovery
+      - port_discovery
+      - service_discovery
+      - web_information_discovery
+      - cve_lookup
+      - report_summary
+    tactics:
+      - tactic_id: reconnaissance
+        display_name: 侦察
+        candidate_techniques:
+          - host_discovery
+      - tactic_id: discovery
+        display_name: 发现
+        candidate_techniques:
+          - port_discovery
+          - service_discovery
+          - web_information_discovery
+      - tactic_id: vulnerability_analysis
+        display_name: 漏洞线索分析
+        candidate_techniques:
+          - cve_lookup
+          - config_risk_check
+      - tactic_id: report
+        display_name: 报告汇总
+        candidate_techniques:
+          - report_summary
+    execution_dependencies:
+      - from: host_discovery
+        to: port_discovery
+      - from: port_discovery
+        to: service_discovery
+      - from: port_discovery
+        to: web_information_discovery
+      - from: service_discovery
+        to: cve_lookup
+      - from: web_information_discovery
+        to: cve_lookup
+      - from: cve_lookup
+        to: report_summary
+    safety_constraints:
+      max_risk_level: medium
+      allow_high_risk: false
+      requires_human_approval: false
+      auto_execute_allowed: true
+
+  - route_id: route_web_service_risk_assessment
+    name: web_service_risk_assessment
+    display_name: Web 服务风险评估路线
+    description: 对授权 Web 服务进行标题、响应头、技术栈、TLS 和版本风险识别。
+    enabled: true
+    risk_level: low
+    route_type: assessment
+    knowledge_refs:
+      - source: local_sop
+        id: sop_web_service_risk_assessment
+      - source: mitre_attack
+        id: TA0043
+        note: Reconnaissance reference for explainability only.
+    recommended_for:
+      - web_security_assessment
+      - web_exposure_assessment
+    selection_hints:
+      target_kinds:
+        - web_service
+        - host_with_http_ports
+      useful_when:
+        - 目标已知存在 HTTP 或 HTTPS 服务
+        - 用户要求 Web 暴露面、技术栈或 TLS 线索
+      avoid_when:
+        - 目标只是内网资产清点
+        - 用户请求漏洞利用或凭据尝试
+    expected_outputs:
+      - web_summary
+      - technology_summary
+      - tls_summary
+      - risk_findings
+      - report_markdown
+    default_selected_techniques:
+      - host_discovery
+      - port_discovery
+      - web_title_detection
+      - web_header_analysis
+      - web_tech_stack_identification
+      - tls_certificate_inspection
+      - cve_lookup
+      - report_summary
+    tactics:
+      - tactic_id: reconnaissance
+        display_name: 侦察
+        candidate_techniques:
+          - host_discovery
+      - tactic_id: discovery
+        display_name: 发现
+        candidate_techniques:
+          - port_discovery
+      - tactic_id: web_fingerprinting
+        display_name: Web 指纹识别
+        candidate_techniques:
+          - web_title_detection
+          - web_header_analysis
+          - web_tech_stack_identification
+          - tls_certificate_inspection
+      - tactic_id: vulnerability_analysis
+        display_name: 漏洞线索分析
+        candidate_techniques:
+          - cve_lookup
+          - config_risk_check
+      - tactic_id: report
+        display_name: 报告汇总
+        candidate_techniques:
+          - report_summary
+    execution_dependencies:
+      - from: host_discovery
+        to: port_discovery
+      - from: port_discovery
+        to: web_title_detection
+      - from: port_discovery
+        to: web_header_analysis
+      - from: port_discovery
+        to: web_tech_stack_identification
+      - from: port_discovery
+        to: tls_certificate_inspection
+      - from: web_tech_stack_identification
+        to: cve_lookup
+      - from: tls_certificate_inspection
+        to: cve_lookup
+      - from: cve_lookup
+        to: report_summary
+    safety_constraints:
+      max_risk_level: medium
+      allow_high_risk: false
+      requires_human_approval: false
+      auto_execute_allowed: true
+
+  - route_id: route_internal_asset_discovery
+    name: internal_asset_discovery
+    display_name: 内网资产发现路线
+    description: 对授权内网网段或靶场网络进行资产发现与基础分类。
+    enabled: true
+    risk_level: medium
+    route_type: discovery
+    knowledge_refs:
+      - source: local_sop
+        id: sop_internal_asset_discovery
+      - source: mitre_attack
+        id: TA0007
+        note: Discovery reference for explainability only.
+    recommended_for:
+      - internal_asset_inventory
+      - network_discovery
+    selection_hints:
+      target_kinds:
+        - subnet
+        - internal_network
+      useful_when:
+        - 用户目标是资产清点
+        - 授权范围包含网段
+      avoid_when:
+        - 授权范围只包含单个 Web 服务
+        - 策略禁止中等网络噪声动作
+    expected_outputs:
+      - asset_inventory
+      - service_summary
+      - asset_classification
+      - report_markdown
+    default_selected_techniques:
+      - host_discovery
+      - port_discovery
+      - service_discovery
+      - asset_type_classification
+      - service_role_classification
+      - asset_inventory_summary
+    tactics:
+      - tactic_id: discovery
+        display_name: 发现
+        candidate_techniques:
+          - host_discovery
+          - port_discovery
+      - tactic_id: service_discovery
+        display_name: 服务发现
+        candidate_techniques:
+          - service_discovery
+      - tactic_id: asset_classification
+        display_name: 资产分类
+        candidate_techniques:
+          - asset_type_classification
+          - service_role_classification
+      - tactic_id: report
+        display_name: 报告汇总
+        candidate_techniques:
+          - asset_inventory_summary
+    execution_dependencies:
+      - from: host_discovery
+        to: port_discovery
+      - from: port_discovery
+        to: service_discovery
+      - from: service_discovery
+        to: asset_type_classification
+      - from: service_discovery
+        to: service_role_classification
+      - from: asset_type_classification
+        to: asset_inventory_summary
+      - from: service_role_classification
+        to: asset_inventory_summary
+    safety_constraints:
+      max_risk_level: medium
+      allow_high_risk: false
+      requires_human_approval: false
+      auto_execute_allowed: true
+
+  - route_id: route_credential_risk_assessment
+    name: credential_risk_assessment
+    display_name: 凭据风险检查路线
+    description: 高风险审批机制占位路线，一阶段默认禁用，不自动执行。
+    enabled: false
+    risk_level: high
+    route_type: approval_demo
+    knowledge_refs:
+      - source: local_sop
+        id: sop_credential_risk_assessment
+    recommended_for:
+      - credential_risk_assessment
+      - approval_flow_demo
+    selection_hints:
+      target_kinds:
+        - service
+      useful_when:
+        - 仅用于论文说明高风险动作审批机制
+        - 用户明确授权凭据风险检查且人工审批已启用
+      avoid_when:
+        - 默认 MVP 演示
+        - 未提供人工审批记录
+    expected_outputs:
+      - credential_risk_status
+      - approval_events
+      - report_markdown
+    default_selected_techniques:
+      - service_discovery
+      - weak_credential_check
+      - default_credential_check
+      - report_summary
+    tactics:
+      - tactic_id: discovery
+        display_name: 发现
+        candidate_techniques:
+          - service_discovery
+      - tactic_id: credential_risk_assessment
+        display_name: 凭据风险检查
+        candidate_techniques:
+          - weak_credential_check
+          - default_credential_check
+      - tactic_id: report
+        display_name: 报告汇总
+        candidate_techniques:
+          - report_summary
+    execution_dependencies:
+      - from: service_discovery
+        to: weak_credential_check
+      - from: service_discovery
+        to: default_credential_check
+      - from: weak_credential_check
+        to: report_summary
+      - from: default_credential_check
+        to: report_summary
+    safety_constraints:
+      max_risk_level: high
+      allow_high_risk: false
+      requires_human_approval: true
+      auto_execute_allowed: false

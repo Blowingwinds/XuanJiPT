@@ -1,0 +1,554 @@
+metadata:
+  library_id: default_operator_template_library
+  version: "0.1"
+  description: Phase-one Operator Template library for constrained PTT-DAG Action instantiation.
+  owner: ptt_orchestrator
+  action_source_rule: Every Action must be instantiated from exactly one operator_id in this file.
+  risk_levels:
+    - low
+    - medium
+    - high
+    - critical
+  side_effect_dimensions:
+    network_noise:
+      allowed_values:
+        - none
+        - low
+        - medium
+        - high
+    service_disruption:
+      allowed_values:
+        - none
+        - low
+        - medium
+        - high
+    credential_exposure:
+      allowed_values:
+        - none
+        - low
+        - medium
+        - high
+    state_change:
+      allowed_values:
+        - none
+        - temporary
+        - persistent
+    audit_log_impact:
+      allowed_values:
+        - none
+        - low
+        - medium
+        - high
+  result_schema_types:
+    - string
+    - integer
+    - number
+    - boolean
+    - array
+    - object
+
+operators:
+  - operator_id: op_host_discovery
+    name: host_discovery
+    display_name: 主机存活探测
+    description: 判断授权范围内目标主机是否在线。
+    category: reconnaissance
+    mapped_techniques:
+      - host_discovery
+    required_inputs:
+      - host
+    optional_inputs:
+      - timeout
+    outputs:
+      - is_alive
+      - response_type
+      - confidence
+    preconditions:
+      - target_in_scope
+    risk_level: low
+    side_effects:
+      network_noise: low
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: low
+    requires_human_approval: false
+    allowed_tools:
+      - nmap_adapter
+      - mock_adapter
+    result_schema:
+      is_alive: boolean
+      response_type: string
+      confidence: number
+
+  - operator_id: op_port_scan
+    name: port_scan
+    display_name: 端口状态识别
+    description: 对授权目标执行端口状态识别，发现开放 TCP 端口。
+    category: discovery
+    mapped_techniques:
+      - port_discovery
+    required_inputs:
+      - host
+    optional_inputs:
+      - ports
+      - scan_profile
+    outputs:
+      - open_ports
+      - closed_ports
+      - filtered_ports
+    preconditions:
+      - target_in_scope
+      - host_alive
+    risk_level: medium
+    side_effects:
+      network_noise: medium
+      service_disruption: low
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: medium
+    requires_human_approval: false
+    allowed_tools:
+      - nmap_adapter
+      - mock_adapter
+    result_schema:
+      open_ports: array
+      closed_ports: array
+      filtered_ports: array
+
+  - operator_id: op_service_fingerprint
+    name: service_fingerprint
+    display_name: 服务指纹识别
+    description: 识别目标开放端口对应的服务名称、版本和 banner 信息。
+    category: discovery
+    mapped_techniques:
+      - service_discovery
+    required_inputs:
+      - host
+      - port
+    optional_inputs:
+      - protocol
+      - timeout
+    outputs:
+      - service_name
+      - version
+      - banner
+      - confidence
+    preconditions:
+      - target_in_scope
+      - port_open
+    risk_level: low
+    side_effects:
+      network_noise: low
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: low
+    requires_human_approval: false
+    allowed_tools:
+      - nmap_adapter
+      - web_probe_adapter
+      - mock_adapter
+    result_schema:
+      service_name: string
+      version: string
+      banner: string
+      confidence: number
+
+  - operator_id: op_web_title
+    name: web_title
+    display_name: Web 标题识别
+    description: 获取授权 Web 服务页面标题。
+    category: web_fingerprinting
+    mapped_techniques:
+      - web_information_discovery
+      - web_title_detection
+    required_inputs:
+      - url
+    optional_inputs:
+      - timeout
+    outputs:
+      - title
+      - status_code
+    preconditions:
+      - target_in_scope
+      - web_service_available
+    risk_level: low
+    side_effects:
+      network_noise: low
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: low
+    requires_human_approval: false
+    allowed_tools:
+      - web_probe_adapter
+      - mock_adapter
+    result_schema:
+      title: string
+      status_code: integer
+
+  - operator_id: op_web_header_analysis
+    name: web_header_analysis
+    display_name: Web 响应头分析
+    description: 获取并分析授权 Web 服务响应头。
+    category: web_fingerprinting
+    mapped_techniques:
+      - web_information_discovery
+      - web_header_analysis
+    required_inputs:
+      - url
+    optional_inputs:
+      - timeout
+    outputs:
+      - headers
+      - security_headers
+    preconditions:
+      - target_in_scope
+      - web_service_available
+    risk_level: low
+    side_effects:
+      network_noise: low
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: low
+    requires_human_approval: false
+    allowed_tools:
+      - web_probe_adapter
+      - mock_adapter
+    result_schema:
+      headers: object
+      security_headers: object
+
+  - operator_id: op_web_tech_stack
+    name: web_tech_stack
+    display_name: Web 技术栈识别
+    description: 根据页面和响应头线索识别 Web 技术栈。
+    category: web_fingerprinting
+    mapped_techniques:
+      - web_information_discovery
+      - web_tech_stack_identification
+    required_inputs:
+      - url
+    optional_inputs:
+      - headers
+      - body_sample
+    outputs:
+      - technologies
+      - confidence
+    preconditions:
+      - target_in_scope
+      - web_service_available
+    risk_level: low
+    side_effects:
+      network_noise: low
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: low
+    requires_human_approval: false
+    allowed_tools:
+      - web_probe_adapter
+      - nuclei_adapter
+      - mock_adapter
+    result_schema:
+      technologies: array
+      confidence: number
+
+  - operator_id: op_tls_certificate
+    name: tls_certificate
+    display_name: TLS 证书信息提取
+    description: 提取授权 TLS 服务的证书主体、签发者、有效期和 SAN 信息。
+    category: web_fingerprinting
+    mapped_techniques:
+      - tls_certificate_inspection
+    required_inputs:
+      - host
+      - port
+    optional_inputs:
+      - server_name
+      - timeout
+    outputs:
+      - subject
+      - issuer
+      - not_before
+      - not_after
+      - san
+    preconditions:
+      - target_in_scope
+      - tls_service_available
+    risk_level: low
+    side_effects:
+      network_noise: low
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: low
+    requires_human_approval: false
+    allowed_tools:
+      - web_probe_adapter
+      - mock_adapter
+    result_schema:
+      subject: string
+      issuer: string
+      not_before: string
+      not_after: string
+      san: array
+
+  - operator_id: op_cve_lookup
+    name: cve_lookup
+    display_name: 已知漏洞库匹配
+    description: 根据服务名称和版本信息匹配本地 CVE 或漏洞知识库。
+    category: vulnerability_analysis
+    mapped_techniques:
+      - cve_lookup
+    required_inputs:
+      - service_name
+      - version
+    optional_inputs:
+      - product
+      - vendor
+    outputs:
+      - matched_cves
+      - severity_summary
+      - evidence
+    preconditions:
+      - service_identified
+    risk_level: low
+    side_effects:
+      network_noise: none
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: none
+    requires_human_approval: false
+    allowed_tools:
+      - local_cve_lookup_adapter
+      - mock_adapter
+    result_schema:
+      matched_cves: array
+      severity_summary: object
+      evidence: array
+
+  - operator_id: op_config_risk_check
+    name: config_risk_check
+    display_name: 配置风险检查
+    description: 基于已识别服务信息进行低风险配置风险规则检查。
+    category: vulnerability_analysis
+    mapped_techniques:
+      - config_risk_check
+    required_inputs:
+      - service_name
+    optional_inputs:
+      - headers
+      - banner
+      - technologies
+    outputs:
+      - config_findings
+      - severity_summary
+    preconditions:
+      - service_identified
+    risk_level: low
+    side_effects:
+      network_noise: none
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: none
+    requires_human_approval: false
+    allowed_tools:
+      - mock_adapter
+    result_schema:
+      config_findings: array
+      severity_summary: object
+
+  - operator_id: op_asset_type_classification
+    name: asset_type_classification
+    display_name: 资产类型分类
+    description: 基于端口和服务线索对资产类型进行分类。
+    category: discovery
+    mapped_techniques:
+      - asset_type_classification
+    required_inputs:
+      - services
+    optional_inputs:
+      - open_ports
+    outputs:
+      - asset_type
+      - confidence
+    preconditions:
+      - service_identified
+    risk_level: low
+    side_effects:
+      network_noise: none
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: none
+    requires_human_approval: false
+    allowed_tools:
+      - mock_adapter
+    result_schema:
+      asset_type: string
+      confidence: number
+
+  - operator_id: op_service_role_classification
+    name: service_role_classification
+    display_name: 服务角色分类
+    description: 基于服务指纹对服务角色进行分类。
+    category: discovery
+    mapped_techniques:
+      - service_role_classification
+    required_inputs:
+      - services
+    optional_inputs:
+      - banners
+    outputs:
+      - service_roles
+      - confidence
+    preconditions:
+      - service_identified
+    risk_level: low
+    side_effects:
+      network_noise: none
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: none
+    requires_human_approval: false
+    allowed_tools:
+      - mock_adapter
+    result_schema:
+      service_roles: array
+      confidence: number
+
+  - operator_id: op_asset_inventory_summary
+    name: asset_inventory_summary
+    display_name: 资产清单汇总
+    description: 汇总资产发现和分类结果。
+    category: report
+    mapped_techniques:
+      - asset_inventory_summary
+    required_inputs:
+      - assets
+    optional_inputs:
+      - services
+      - findings
+    outputs:
+      - asset_inventory
+      - summary
+    preconditions:
+      - discovery_completed
+    risk_level: low
+    side_effects:
+      network_noise: none
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: none
+    requires_human_approval: false
+    allowed_tools:
+      - report_adapter
+      - mock_adapter
+    result_schema:
+      asset_inventory: array
+      summary: string
+
+  - operator_id: op_report_summary
+    name: report_summary
+    display_name: 报告汇总
+    description: 汇总 Action 结果并生成阶段报告数据。
+    category: report
+    mapped_techniques:
+      - report_summary
+    required_inputs:
+      - action_results
+    optional_inputs:
+      - assets
+      - findings
+    outputs:
+      - report_markdown
+      - finding_summary
+    preconditions:
+      - planning_completed
+    risk_level: low
+    side_effects:
+      network_noise: none
+      service_disruption: none
+      credential_exposure: none
+      state_change: none
+      audit_log_impact: none
+    requires_human_approval: false
+    allowed_tools:
+      - report_adapter
+      - mock_adapter
+    result_schema:
+      report_markdown: string
+      finding_summary: object
+
+  - operator_id: op_weak_credential_check
+    name: weak_credential_check
+    display_name: 弱凭据风险检查
+    description: 高风险模板占位，一阶段不自动执行。
+    category: credential_risk
+    mapped_techniques:
+      - weak_credential_check
+    required_inputs:
+      - host
+      - port
+      - service_name
+    optional_inputs:
+      - credential_policy
+    outputs:
+      - credential_risk_status
+      - evidence
+    preconditions:
+      - target_in_scope
+      - service_identified
+    risk_level: high
+    side_effects:
+      network_noise: medium
+      service_disruption: medium
+      credential_exposure: high
+      state_change: none
+      audit_log_impact: high
+    requires_human_approval: true
+    allowed_tools:
+      - mock_adapter
+    result_schema:
+      credential_risk_status: string
+      evidence: array
+
+  - operator_id: op_default_credential_check
+    name: default_credential_check
+    display_name: 默认凭据检查
+    description: 高风险模板占位，一阶段不自动执行。
+    category: credential_risk
+    mapped_techniques:
+      - default_credential_check
+    required_inputs:
+      - host
+      - port
+      - service_name
+    optional_inputs:
+      - credential_policy
+    outputs:
+      - default_credential_risk_status
+      - evidence
+    preconditions:
+      - target_in_scope
+      - service_identified
+    risk_level: high
+    side_effects:
+      network_noise: medium
+      service_disruption: medium
+      credential_exposure: high
+      state_change: none
+      audit_log_impact: high
+    requires_human_approval: true
+    allowed_tools:
+      - mock_adapter
+    result_schema:
+      default_credential_risk_status: string
+      evidence: array

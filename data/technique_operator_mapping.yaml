@@ -1,0 +1,253 @@
+metadata:
+  mapping_id: default_technique_operator_mapping
+  version: "0.1"
+  description: Candidate Operator mappings for route-constrained Technique selection.
+  owner: ptt_orchestrator
+  selection_rule: Planner may only instantiate Actions from candidate_operators declared here.
+
+techniques:
+  host_discovery:
+    candidate_operators:
+      - op_host_discovery
+  port_discovery:
+    candidate_operators:
+      - op_port_scan
+  service_discovery:
+    candidate_operators:
+      - op_service_fingerprint
+  web_information_discovery:
+    candidate_operators:
+      - op_web_title
+      - op_web_header_analysis
+      - op_web_tech_stack
+  web_title_detection:
+    candidate_operators:
+      - op_web_title
+  web_header_analysis:
+    candidate_operators:
+      - op_web_header_analysis
+  web_tech_stack_identification:
+    candidate_operators:
+      - op_web_tech_stack
+  tls_certificate_inspection:
+    candidate_operators:
+      - op_tls_certificate
+  cve_lookup:
+    candidate_operators:
+      - op_cve_lookup
+  config_risk_check:
+    candidate_operators:
+      - op_config_risk_check
+  asset_type_classification:
+    candidate_operators:
+      - op_asset_type_classification
+  service_role_classification:
+    candidate_operators:
+      - op_service_role_classification
+  asset_inventory_summary:
+    candidate_operators:
+      - op_asset_inventory_summary
+  weak_credential_check:
+    candidate_operators:
+      - op_weak_credential_check
+  default_credential_check:
+    candidate_operators:
+      - op_default_credential_check
+  report_summary:
+    candidate_operators:
+      - op_report_summary
+
+technique_profiles:
+  host_discovery:
+    display_name: 主机发现
+    description: 判断授权范围内目标主机是否存活。
+    primary_tactic: reconnaissance
+    risk_level: low
+    required_context:
+      - scope
+      - host
+    expected_outputs:
+      - is_alive
+      - response_type
+      - confidence
+
+  port_discovery:
+    display_name: 端口发现
+    description: 识别授权目标开放端口和端口状态。
+    primary_tactic: discovery
+    risk_level: medium
+    required_context:
+      - host
+    expected_outputs:
+      - open_ports
+      - closed_ports
+      - filtered_ports
+
+  service_discovery:
+    display_name: 服务识别
+    description: 识别开放端口对应的服务名称、版本和 banner。
+    primary_tactic: discovery
+    risk_level: low
+    required_context:
+      - host
+      - port
+    expected_outputs:
+      - service_name
+      - version
+      - banner
+      - confidence
+
+  web_information_discovery:
+    display_name: Web 信息识别
+    description: 面向 Web 服务收集标题、响应头和技术栈线索。
+    primary_tactic: discovery
+    risk_level: low
+    required_context:
+      - url
+    expected_outputs:
+      - title
+      - headers
+      - technologies
+
+  web_title_detection:
+    display_name: Web 标题识别
+    description: 获取授权 Web 服务页面标题和 HTTP 状态码。
+    primary_tactic: web_fingerprinting
+    risk_level: low
+    required_context:
+      - url
+    expected_outputs:
+      - title
+      - status_code
+
+  web_header_analysis:
+    display_name: Web 响应头分析
+    description: 获取并分析授权 Web 服务响应头和安全响应头。
+    primary_tactic: web_fingerprinting
+    risk_level: low
+    required_context:
+      - url
+    expected_outputs:
+      - headers
+      - security_headers
+
+  web_tech_stack_identification:
+    display_name: Web 技术栈识别
+    description: 基于页面、响应头和轻量探测识别 Web 技术栈。
+    primary_tactic: web_fingerprinting
+    risk_level: low
+    required_context:
+      - url
+    expected_outputs:
+      - technologies
+      - confidence
+
+  tls_certificate_inspection:
+    display_name: TLS 证书检查
+    description: 提取授权 TLS 服务证书主体、签发者、有效期和 SAN 信息。
+    primary_tactic: web_fingerprinting
+    risk_level: low
+    required_context:
+      - host
+      - port
+    expected_outputs:
+      - subject
+      - issuer
+      - not_after
+      - san
+
+  cve_lookup:
+    display_name: CVE 匹配
+    description: 根据服务名称和版本线索匹配本地 CVE 或漏洞知识库。
+    primary_tactic: vulnerability_analysis
+    risk_level: low
+    required_context:
+      - service_name
+      - version
+    expected_outputs:
+      - matched_cves
+      - severity_summary
+      - evidence
+
+  config_risk_check:
+    display_name: 配置风险检查
+    description: 基于已识别服务、响应头或技术栈线索进行低风险配置检查。
+    primary_tactic: vulnerability_analysis
+    risk_level: low
+    required_context:
+      - service_name
+    expected_outputs:
+      - config_findings
+      - severity_summary
+
+  asset_type_classification:
+    display_name: 资产类型分类
+    description: 基于端口和服务线索对资产类型进行分类。
+    primary_tactic: asset_classification
+    risk_level: low
+    required_context:
+      - services
+    expected_outputs:
+      - asset_type
+      - confidence
+
+  service_role_classification:
+    display_name: 服务角色分类
+    description: 基于服务指纹对服务角色进行分类。
+    primary_tactic: asset_classification
+    risk_level: low
+    required_context:
+      - services
+    expected_outputs:
+      - service_roles
+      - confidence
+
+  asset_inventory_summary:
+    display_name: 资产清单汇总
+    description: 汇总授权范围内资产发现和服务分类结果。
+    primary_tactic: report
+    risk_level: low
+    required_context:
+      - assets
+    expected_outputs:
+      - asset_inventory
+      - summary
+
+  weak_credential_check:
+    display_name: 弱凭据风险检查
+    description: 高风险审批占位 Technique，一阶段不自动执行。
+    primary_tactic: credential_risk_assessment
+    risk_level: high
+    required_context:
+      - host
+      - port
+      - service_name
+    expected_outputs:
+      - credential_risk_status
+      - evidence
+    requires_human_approval: true
+
+  default_credential_check:
+    display_name: 默认凭据检查
+    description: 高风险审批占位 Technique，一阶段不自动执行。
+    primary_tactic: credential_risk_assessment
+    risk_level: high
+    required_context:
+      - host
+      - port
+      - service_name
+    expected_outputs:
+      - default_credential_risk_status
+      - evidence
+    requires_human_approval: true
+
+  report_summary:
+    display_name: 报告汇总
+    description: 汇总 PTT-DAG、Action 结果、发现和审批状态。
+    primary_tactic: report
+    risk_level: low
+    required_context:
+      - action_results
+    expected_outputs:
+      - report_markdown
+      - finding_summary

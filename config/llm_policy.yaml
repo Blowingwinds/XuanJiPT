@@ -1,0 +1,51 @@
+policy_id: default_mvp_llm_policy
+version: "0.1"
+description: LLM usage policy for constrained technique selection and optional PTT-DAG draft generation.
+
+runtime:
+  enabled: false
+  default_provider: disabled
+  default_model: null
+  temperature: 0
+  max_output_tokens: 1200
+  timeout_seconds: 30
+
+allowed_tasks:
+  technique_selection: true
+  ptt_dag_draft_generation: false
+  explanation_generation: true
+  report_polishing: false
+
+forbidden_outputs:
+  allow_command_generation: false
+  allow_payload_generation: false
+  allow_exploit_steps: false
+  allow_credential_guessing_steps: false
+  allow_freeform_attack_chain: false
+  allow_new_route_ids: false
+  allow_new_techniques: false
+  allow_new_operator_ids: false
+  allow_scope_expansion: false
+
+input_constraints:
+  provide_only_candidate_routes: true
+  provide_only_candidate_techniques: true
+  provide_only_operator_ids_from_registry: true
+  include_safety_policy_summary: true
+  include_authorized_scope: true
+  exclude_secrets: true
+
+output_constraints:
+  require_json_output: true
+  reject_markdown_wrapped_json: true
+  require_tactic_grouped_technique_selection: true
+  require_tactic_ids_from_selected_route: true
+  require_techniques_from_matching_tactic_candidates: true
+  allow_reasoning_summary: true
+  max_reasoning_summary_chars: 500
+  require_programmatic_validation_before_use: true
+
+fallback:
+  use_rule_based_selection_when_disabled: true
+  fail_closed_on_invalid_output: true
+  fail_closed_on_timeout: true

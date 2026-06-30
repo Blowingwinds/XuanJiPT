@@ -1,0 +1,149 @@
+metadata:
+  registry_id: default_tool_registry
+  version: "0.1"
+  description: Tool Adapter capability registry for phase-one Action execution and mock demonstration.
+  owner: ptt_orchestrator
+  capability_rule: A tool can execute an Action only when it declares support for the Action operator_id.
+  runtime_modes:
+    - mock
+    - local
+    - disabled_until_explicitly_enabled
+    - disabled_until_dataset_available
+  selection_dimensions:
+    - capability_match
+    - output_coverage
+    - safety_score
+    - cost_score
+
+tools:
+  - tool_id: mock_adapter
+    name: Mock Adapter
+    type: mock_adapter
+    description: 返回固定结构化结果，用于一阶段规划链路验证。
+    supported_operators:
+      - op_host_discovery
+      - op_port_scan
+      - op_service_fingerprint
+      - op_web_title
+      - op_web_header_analysis
+      - op_web_tech_stack
+      - op_tls_certificate
+      - op_cve_lookup
+      - op_config_risk_check
+      - op_asset_type_classification
+      - op_service_role_classification
+      - op_asset_inventory_summary
+      - op_report_summary
+      - op_weak_credential_check
+      - op_default_credential_check
+    risk_profile:
+      network_noise: none
+      service_disruption: none
+    runtime:
+      mode: mock
+      timeout_seconds: 5
+    selection_profile:
+      cost_score: 1.0
+      safety_score: 1.0
+      output_quality: simulated
+
+  - tool_id: nmap_adapter
+    name: Nmap Adapter
+    type: command_adapter
+    description: 低风险主机发现、端口识别和服务指纹识别适配器。
+    supported_operators:
+      - op_host_discovery
+      - op_port_scan
+      - op_service_fingerprint
+    risk_profile:
+      network_noise: medium
+      service_disruption: low
+    constraints:
+      requires_scope_check: true
+      requires_approval: false
+    runtime:
+      mode: disabled_until_explicitly_enabled
+      timeout_seconds: 30
+    selection_profile:
+      cost_score: 0.6
+      safety_score: 0.7
+      output_quality: high_for_network_discovery
+
+  - tool_id: web_probe_adapter
+    name: Web Probe Adapter
+    type: http_adapter
+    description: Web 标题、响应头、技术栈和 TLS 信息识别适配器。
+    supported_operators:
+      - op_service_fingerprint
+      - op_web_title
+      - op_web_header_analysis
+      - op_web_tech_stack
+      - op_tls_certificate
+    risk_profile:
+      network_noise: low
+      service_disruption: none
+    constraints:
+      requires_scope_check: true
+      requires_approval: false
+    runtime:
+      mode: disabled_until_explicitly_enabled
+      timeout_seconds: 15
+    selection_profile:
+      cost_score: 0.8
+      safety_score: 0.9
+      output_quality: high_for_web_fingerprinting
+
+  - tool_id: nuclei_adapter
+    name: Nuclei Adapter
+    type: template_scanner_adapter
+    description: 基于 Nuclei 模板进行低风险技术栈和暴露面线索识别，一阶段默认禁用真实执行。
+    supported_operators:
+      - op_web_tech_stack
+    risk_profile:
+      network_noise: medium
+      service_disruption: low
+    constraints:
+      requires_scope_check: true
+      requires_approval: false
+    runtime:
+      mode: disabled_until_explicitly_enabled
+      timeout_seconds: 30
+    selection_profile:
+      cost_score: 0.5
+      safety_score: 0.7
+      output_quality: medium_for_template_detection
+
+  - tool_id: local_cve_lookup_adapter
+    name: Local CVE Lookup Adapter
+    type: local_knowledge_adapter
+    description: 基于本地漏洞知识库进行版本线索匹配。
+    supported_operators:
+      - op_cve_lookup
+    risk_profile:
+      network_noise: none
+      service_disruption: none
+    runtime:
+      mode: disabled_until_dataset_available
+      timeout_seconds: 10
+    selection_profile:
+      cost_score: 0.9
+      safety_score: 1.0
+      output_quality: depends_on_local_dataset
+
+  - tool_id: report_adapter
+    name: Report Adapter
+    type: local_report_adapter
+    description: 汇总 PTT-DAG 和 Action 结果，生成报告内容。
+    supported_operators:
+      - op_asset_inventory_summary
+      - op_report_summary
+    risk_profile:
+      network_noise: none
+      service_disruption: none
+    runtime:
+      mode: local
+      timeout_seconds: 10
+    selection_profile:
+      cost_score: 1.0
+      safety_score: 1.0
+      output_quality: deterministic

@@ -1,0 +1,50 @@
+app:
+  name: XuanJiPT
+  version: "0.1"
+  environment: development
+  description: Runtime settings for 玄机图 XuanJiPT, a phase-one PTT-DAG planning prototype.
+
+paths:
+  safety_policy: config/safety_policy.yaml
+  execution_policy: config/execution_policy.yaml
+  approval_policy: config/approval_policy.yaml
+  validation_policy: config/validation_policy.yaml
+  llm_policy: config/llm_policy.yaml
+  blackboard_policy: config/blackboard_policy.yaml
+  report_policy: config/report_policy.yaml
+  route_templates: data/route_templates.yaml
+  technique_operator_mapping: data/technique_operator_mapping.yaml
+  operator_templates: data/operator_templates.yaml
+  tool_registry: data/tool_registry.yaml
+  technique_selection_prompt: prompts/technique_selection_prompt.md
+  ptt_dag_generation_prompt: prompts/ptt_dag_generation_prompt.md
+  route_selection_prompt: prompts/route_selection_prompt.md
+  validation_explanation_prompt: prompts/validation_explanation_prompt.md
+  report_summary_prompt: prompts/report_summary_prompt.md
+  output_dir: outputs
+
+runtime:
+  mode: mock_first
+  default_input: examples/input_basic_assessment.json
+  write_intermediate_artifacts: true
+  fail_fast_on_validation_error: true
+  timezone: Asia/Shanghai
+
+features:
+  enable_llm_technique_selection: false
+  enable_llm_ptt_dag_generation: false
+  enable_langgraph_runtime: false
+  enable_real_adapters: false
+  enable_report_generation: true
+
+llm:
+  provider: disabled
+  model: null
+  temperature: 0
+  max_output_tokens: 1200
+  require_json_output: true
+
+logging:
+  level: INFO
+  structured: true
+  include_raw_tool_output: false

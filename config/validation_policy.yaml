@@ -1,0 +1,72 @@
+policy_id: default_mvp_validation_policy
+version: "0.1"
+description: Validation rules for route templates, operator templates, tool registry, and generated PTT-DAGs.
+
+template_validation:
+  route_templates:
+    require_unique_route_id: true
+    require_enabled_field: true
+    require_tactics: true
+    require_candidate_techniques: true
+    require_default_selected_techniques_subset_of_candidates: true
+    require_execution_dependencies_reference_candidates: true
+    disabled_routes_selectable_by_default: false
+
+  technique_operator_mapping:
+    require_known_operator_ids: true
+    require_non_empty_candidate_operators: true
+    warn_if_operator_does_not_list_mapped_technique: true
+
+  operator_templates:
+    require_unique_operator_id: true
+    require_required_inputs_array: true
+    require_outputs_array: true
+    require_side_effect_dimensions:
+      - network_noise
+      - service_disruption
+      - credential_exposure
+      - state_change
+      - audit_log_impact
+    require_allowed_tools: true
+    require_result_schema_covers_outputs: true
+    high_or_critical_requires_human_approval: true
+
+  tool_registry:
+    require_unique_tool_id: true
+    require_supported_operators: true
+    require_supported_operators_known: true
+
+ptt_dag_validation:
+  require_graph_id: true
+  require_selected_route_id: true
+  require_single_goal_node: true
+  require_node_ids_unique: true
+  require_edge_endpoints_exist: true
+  require_contains_edges_match_levels: true
+  require_depends_on_action_only: true
+  require_depends_on_acyclic: true
+  require_action_operator_id: true
+  require_action_operator_exists: true
+  require_action_target_in_scope: true
+  require_action_allowed_tools_known: true
+  require_action_risk_within_policy: true
+  require_high_risk_waiting_approval: true
+  reject_unknown_route_ids: true
+  reject_unknown_techniques: true
+  reject_unknown_operator_ids: true
+
+llm_output_validation:
+  technique_selection:
+    require_selected_techniques_by_tactic: true
+    require_tactic_ids_from_selected_route: true
+    require_techniques_from_matching_tactic_candidates: true
+    reject_flat_selected_techniques_only: true
+    reject_unknown_tactic_ids: true
+    reject_unknown_techniques: true
+    require_overall_reasoning_summary: true
+
+validation_output:
+  collect_all_errors: true
+  include_warnings: true
+  include_node_references: true
+  include_policy_references: true

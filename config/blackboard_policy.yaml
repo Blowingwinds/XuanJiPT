@@ -1,0 +1,54 @@
+policy_id: default_mvp_blackboard_policy
+version: "0.1"
+description: Lightweight blackboard storage and update rules for phase-one execution state.
+
+storage:
+  mode: in_memory
+  persist_to_file: false
+  file_path: outputs/blackboard_state.json
+  write_pretty_json: true
+
+namespaces:
+  assets:
+    key_field: asset_id
+    merge_strategy: shallow_merge
+  services:
+    key_fields:
+      - host
+      - port
+      - protocol
+    merge_strategy: shallow_merge
+  findings:
+    key_field: finding_id
+    merge_strategy: append_unique
+  action_results:
+    key_field: action_id
+    merge_strategy: replace
+  events:
+    key_field: event_id
+    merge_strategy: append
+
+update_rules:
+  allow_action_result_overwrite: false
+  allow_failed_action_result_storage: true
+  require_action_id_for_results: true
+  require_timestamp_for_events: true
+  update_assets_from_host_discovery: true
+  update_services_from_port_scan: true
+  update_services_from_service_fingerprint: true
+  update_findings_from_cve_lookup: true
+
+retention:
+  max_events: 1000
+  keep_raw_adapter_output: false
+  keep_validation_errors: true
+
+redaction:
+  enabled: true
+  redact_fields:
+    - password
+    - token
+    - secret
+    - credential
+    - api_key
+

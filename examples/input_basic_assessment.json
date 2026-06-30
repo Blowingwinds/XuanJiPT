@@ -1,0 +1,19 @@
+{
+  "goal": "对授权靶场主机进行基础安全评估，输出资产、服务和初步漏洞线索。",
+  "intent": "basic_security_assessment",
+  "scope": ["192.168.56.10"],
+  "constraints": {
+    "allow_high_risk": false,
+    "max_risk_level": "medium"
+  },
+  "known_assets": [
+    {
+      "asset_id": "asset-001",
+      "host": "192.168.56.10",
+      "known_ports": [],
+      "known_services": [],
+      "known_findings": []
+    }
+  ]
+}
+

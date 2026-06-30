@@ -1,0 +1,44 @@
+policy_id: default_mvp_safety_policy
+version: "0.1"
+description: Safety boundary for the phase-one PTT-DAG prototype.
+
+scope:
+  allowed_targets:
+    - 192.168.56.0/24
+    - 127.0.0.1/32
+  denied_targets:
+    - 0.0.0.0/0
+  require_explicit_scope_match: true
+
+risk:
+  levels:
+    - low
+    - medium
+    - high
+    - critical
+  max_auto_execute_level: medium
+  require_approval_levels:
+    - high
+    - critical
+
+actions:
+  allow_categories:
+    - reconnaissance
+    - discovery
+    - web_fingerprinting
+    - vulnerability_analysis
+    - report
+  deny_categories:
+    - persistence
+    - destructive_operation
+    - credential_dumping
+    - lateral_movement
+  high_risk_action_status: waiting_approval
+
+llm:
+  allow_freeform_attack_chain: false
+  allow_command_generation: false
+  allow_new_route_ids: false
+  allow_new_techniques: false
+  allow_new_operator_ids: false
+
